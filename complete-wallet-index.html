@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperFlow Protocol - Advanced DeFi Presale</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        
+        /* Wallet Modal Styles */
+        .wallet-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .wallet-modal-content {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid #334155;
+        }
+        
+        .wallet-modal h3 {
+            color: #2dd4bf;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+        
+        .wallet-option {
+            display: flex;
+            align-items: center;
+            background: #334155;
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            width: 100%;
+            color: #e2e8f0;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .wallet-option:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+        
+        .wallet-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        
+        .close-btn {
+            background: #374151;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #fff;
+        }
+        
+        .close-btn:hover {
+            background: #4b5563;
+        }
+        
+        .calculator-container {
+            background: rgba(45, 212, 191, 0.1);
+            border: 1px solid #2dd4bf;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px auto;
+            max-width: 500px;
+        }
+        
+        .calculator-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .calculator-input {
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 12px;
+            color: #e2e8f0;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .purchase-btn {
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .purchase-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .purchase-btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+    
+    <!-- Clean Web3 Connection with Privy SDK -->
+    <script src="https://unpkg.com/web3@1.10.0/dist/web3.min.js"></script>
+    <script crossorigin="anonymous" src="https://auth.privy.io/js/privy-auth-sdk.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header style="background: #1e293b; padding: 20px; border-bottom: 1px solid #334155;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center;">
+                <svg width="40" height="40" viewBox="0 0 100 100" style="margin-right: 12px;">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#2dd4bf"/>
+                            <stop offset="100%" style="stop-color:#14b8a6"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="url(#logoGrad)"/>
+                    <text x="50" y="58" text-anchor="middle" fill="white" font-family="Inter" font-weight="700" font-size="32">HF</text>
+                </svg>
+                <div>
+                    <h1 style="margin: 0; color: #2dd4bf; font-size: 24px; font-weight: 700;">HyperFlow</h1>
+                    <p style="margin: 0; color: #94a3b8; font-size: 14px;">Advanced DeFi Protocol</p>
+                </div>
+            </div>
+            
+            <button id="connectWalletBtn" onclick="connectWallet()" style="background: linear-gradient(135deg, #2dd4bf, #14b8a6); border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; font-size: 16px;">
+                Connect Wallet
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 80px 20px; text-align: center;">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <h1 style="font-size: 48px; font-weight: 800; color: #2dd4bf; margin-bottom: 20px;">
+                HyperFlow Protocol
+            </h1>
+            <h2 style="font-size: 32px; font-weight: 600; color: #e2e8f0; margin-bottom: 25px;">
+                Fair Public Presale
+            </h2>
+            <p style="font-size: 20px; color: #94a3b8; margin-bottom: 40px;">
+                Join the next generation of DeFi infrastructure on HyperEVM. Fair presale with no tier discrimination.
+            </p>
+            
+            <!-- Price Info -->
+            <div style="background: rgba(45, 212, 191, 0.1); border: 1px solid #2dd4bf; border-radius: 12px; padding: 30px; margin: 40px auto; max-width: 600px;">
+                <h3 style="color: #2dd4bf; font-size: 28px; margin-bottom: 20px;">$0.0005</h3>
+                <p style="font-size: 18px; margin-bottom: 10px;">Price per FLOW Token</p>
+                <p style="font-size: 16px; color: #94a3b8;">25,000 FLOW per 1 HYPE • 2,000 HYPE Hard Cap</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Presale Calculator -->
+    <section style="padding: 60px 20px; background: #0f172a;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h2 style="text-align: center; font-size: 36px; color: #2dd4bf; margin-bottom: 40px;">
+                Presale Calculator
+            </h2>
+            
+            <div class="calculator-container">
+                <div class="calculator-row">
+                    <span>HYPE Amount:</span>
+                    <span id="hyp eAmount">0</span>
+                </div>
+                <input type="number" id="purchaseAmount" class="calculator-input" placeholder="Enter HYPE amount (max 2,000)" min="0" max="2000" oninput="updateCalculation()">
+                
+                <div class="calculator-row">
+                    <span>FLOW Tokens Received:</span>
+                    <span id="flowAmount">0</span>
+                </div>
+                
+                <div class="calculator-row">
+                    <span>USD Value:</span>
+                    <span id="usdValue">$0.00</span>
+                </div>
+                
+                <button id="purchaseBtn" class="purchase-btn" onclick="purchaseTokens()" disabled>
+                    Enter Purchase Amount
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wallet Modal -->
+    <div id="walletModal" class="wallet-modal">
+        <div class="wallet-modal-content">
+            <h3>Connect Your Wallet</h3>
+            
+            <button class="wallet-option" onclick="connectSpecificWallet('metamask')">
+                <span class="wallet-icon">🦊</span>
+                MetaMask
+            </button>
+            
+            <button class="wallet-option" onclick="connectSpecificWallet('coinbase')">
+                <span class="wallet-icon">🔵</span>
+                Coinbase Wallet
+            </button>
+            
+            <button class="wallet-option" onclick="connectSpecificWallet('trust')">
+                <span class="wallet-icon">🔷</span>
+                Trust Wallet
+            </button>
+            
+            <button class="wallet-option" onclick="connectSpecificWallet('walletconnect')">
+                <span class="wallet-icon">🔗</span>
+                WalletConnect
+            </button>
+            
+            <button class="wallet-option" onclick="connectWithPrivy('email')">
+                <span class="wallet-icon">📧</span>
+                Email
+            </button>
+            
+            <button class="wallet-option" onclick="connectWithPrivy('phone')">
+                <span class="wallet-icon">📱</span>
+                Phone
+            </button>
+            
+            <button class="close-btn" onclick="closeWalletModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let walletConnected = false;
+        let currentWalletAddress = null;
+        let isConnecting = false;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('HyperFlow presale loaded with Privy - ready for wallet connection');
+            
+            // Detect and setup MetaMask mobile browser
+            setupMetaMaskMobileDetection();
+            
+            // Check if we just returned from a wallet app or are in MetaMask browser
+            if (isMobileDevice() && (window.ethereum || isMetaMaskMobileBrowser()) && !walletConnected) {
+                console.log('Detected wallet browser or return from wallet app, attempting auto-connection...');
+                setTimeout(async () => {
+                    try {
+                        await connectInjectedWallet();
+                    } catch (error) {
+                        console.log('Auto-connection on return failed:', error);
+                    }
+                }, 500);
+            }
+            
+            // Initialize Privy if available
+            console.log('Checking for Privy SDK...');
+            console.log('typeof Privy:', typeof Privy);
+            console.log('window.Privy:', !!window.Privy);
+            
+            if (typeof Privy !== 'undefined') {
+                try {
+                    console.log('Privy SDK detected, initializing with App ID: cmebbx3i201jwif0bhy9kxh32');
+                    await Privy.initialize({
+                        appId: 'cmebbx3i201jwif0bhy9kxh32'
+                    });
+                    console.log('Privy initialized successfully');
+                    window.privyInitialized = true;
+                } catch (error) {
+                    console.log('Privy initialization failed:', error);
+                    window.privyInitialized = false;
+                }
+            } else {
+                console.log('Privy SDK not found - will use fallback wallet options');
+                window.privyInitialized = false;
+            }
+        });
+        
+        function isMetaMaskMobileBrowser() {
+            const userAgent = navigator.userAgent;
+            return userAgent.includes('MetaMaskMobile') || 
+                   userAgent.includes('MetaMask') ||
+                   (window.ethereum && window.ethereum.isMetaMask && isMobileDevice());
+        }
+        
+        function setupMetaMaskMobileDetection() {
+            console.log('Setting up MetaMask mobile detection...');
+            console.log('User agent:', navigator.userAgent);
+            console.log('Is MetaMask mobile browser:', isMetaMaskMobileBrowser());
+            
+            // For MetaMask mobile browser, ensure ethereum provider is available
+            if (isMetaMaskMobileBrowser() && !window.ethereum) {
+                console.log('MetaMask mobile browser detected but no ethereum provider, waiting...');
+                
+                // Wait for ethereum provider to be injected
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds
+                
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    
+                    if (window.ethereum) {
+                        console.log('Ethereum provider detected in MetaMask browser!');
+                        clearInterval(checkInterval);
+                        
+                        // Auto-connect if we're in MetaMask browser
+                        if (!walletConnected) {
+                            setTimeout(async () => {
+                                try {
+                                    console.log('Auto-connecting in MetaMask browser...');
+                                    await connectInjectedWallet();
+                                } catch (error) {
+                                    console.log('Auto-connection in MetaMask browser failed:', error);
+                                }
+                            }, 500);
+                        }
+                    } else if (attempts >= maxAttempts) {
+                        console.log('Ethereum provider not found in MetaMask browser');
+                        clearInterval(checkInterval);
+                    }
+                }, 100);
+            }
+        }
+        
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        function updateCalculation() {
+            const amount = parseFloat(document.getElementById('purchaseAmount').value) || 0;
+            const flowTokens = amount * 25000;
+            const usdValue = amount * 12.5; // $0.0005 * 25000 = $12.5 per HYPE
+            
+            document.getElementById('hypeAmount').textContent = amount.toLocaleString();
+            document.getElementById('flowAmount').textContent = flowTokens.toLocaleString();
+            document.getElementById('usdValue').textContent = '$' + usdValue.toFixed(2);
+            
+            const purchaseBtn = document.getElementById('purchaseBtn');
+            if (amount > 0 && amount <= 2000 && walletConnected) {
+                purchaseBtn.disabled = false;
+                purchaseBtn.textContent = `Purchase ${amount} HYPE for ${flowTokens.toLocaleString()} FLOW`;
+            } else if (!walletConnected) {
+                purchaseBtn.disabled = true;
+                purchaseBtn.textContent = 'Connect Wallet to Purchase';
+            } else {
+                purchaseBtn.disabled = true;
+                purchaseBtn.textContent = 'Enter Purchase Amount';
+            }
+        }
+        
+        // Universal wallet connection that works on ALL browsers and devices
+        async function connectWallet() {
+            if (isConnecting) return;
+            
+            console.log('=== UNIVERSAL WALLET CONNECTION ===');
+            console.log('window.ethereum available:', !!window.ethereum);
+            console.log('Mobile device:', isMobileDevice());
+            console.log('MetaMask mobile browser:', isMetaMaskMobileBrowser());
+            console.log('User agent:', navigator.userAgent);
+            
+            isConnecting = true;
+            document.getElementById('connectWalletBtn').disabled = true;
+            document.getElementById('connectWalletBtn').textContent = 'Connecting...';
+            
+            // For MetaMask mobile browser, wait for ethereum provider if not available
+            if (isMetaMaskMobileBrowser() && !window.ethereum) {
+                console.log('MetaMask browser detected, waiting for ethereum provider...');
+                await waitForEthereumProvider();
+            }
+            
+            // ALWAYS try direct connection first if ethereum is available
+            if (window.ethereum) {
+                console.log('Ethereum provider detected, attempting direct connection');
+                try {
+                    await connectInjectedWallet();
+                    isConnecting = false;
+                    return;
+                } catch (error) {
+                    console.log('Direct connection failed:', error);
+                    // Only show modal if direct connection truly fails
+                }
+            }
+            
+            // Only show modal if no ethereum provider or direct connection failed
+            console.log('Showing wallet selection modal');
+            showWalletModal();
+            isConnecting = false;
+        }
+        
+        async function waitForEthereumProvider() {
+            return new Promise((resolve) => {
+                if (window.ethereum) {
+                    resolve();
+                    return;
+                }
+                
+                let attempts = 0;
+                const maxAttempts = 30; // 3 seconds
+                
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    
+                    if (window.ethereum) {
+                        console.log('Ethereum provider found after waiting!');
+                        clearInterval(checkInterval);
+                        resolve();
+                    } else if (attempts >= maxAttempts) {
+                        console.log('Timeout waiting for ethereum provider');
+                        clearInterval(checkInterval);
+                        resolve();
+                    }
+                }, 100);
+            });
+        }
+        
+        async function connectInjectedWallet() {
+            if (!window.ethereum) {
+                throw new Error('No ethereum provider found');
+            }
+            
+            console.log('Requesting wallet accounts...');
+            
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts'
+            });
+            
+            console.log('Accounts received:', accounts);
+            
+            if (accounts.length > 0) {
+                // Determine wallet type
+                let walletType = 'Wallet';
+                if (window.ethereum.isMetaMask) walletType = 'MetaMask';
+                else if (window.ethereum.isCoinbaseWallet) walletType = 'Coinbase Wallet';
+                else if (window.ethereum.isTrust) walletType = 'Trust Wallet';
+                
+                await handleSuccessfulConnection(accounts[0], walletType);
+            } else {
+                throw new Error('No accounts found');
+            }
+        }
+        
+        async function connectSpecificWallet(walletType) {
+            closeWalletModal();
+            
+            try {
+                switch (walletType) {
+                    case 'injected':
+                        await connectInjectedWallet();
+                        break;
+                    case 'metamask':
+                        await connectMetaMask();
+                        break;
+                    case 'coinbase':
+                        await connectCoinbaseWallet();
+                        break;
+                    case 'trust':
+                        await connectTrustWallet();
+                        break;
+                    case 'walletconnect':
+                        await connectWalletConnect();
+                        break;
+                    default:
+                        throw new Error('Unknown wallet type');
+                }
+            } catch (error) {
+                handleConnectionError(error, walletType);
+            }
+        }
+        
+        async function connectMetaMask() {
+            console.log('MetaMask connection requested');
+            console.log('window.ethereum available:', !!window.ethereum);
+            console.log('Is mobile:', isMobileDevice());
+            
+            // First try direct connection if ethereum is available
+            if (window.ethereum) {
+                console.log('Using existing ethereum provider for MetaMask');
+                try {
+                    await connectInjectedWallet();
+                    return;
+                } catch (error) {
+                    console.log('Direct ethereum connection failed:', error);
+                }
+            }
+            
+            if (isMobileDevice()) {
+                // Mobile: Use deep link and setup detection for return
+                const metamaskUrl = `metamask://dapp/${window.location.host}${window.location.pathname}`;
+                console.log('Opening MetaMask app via deep link:', metamaskUrl);
+                
+                // Setup detection for when MetaMask returns
+                setupMobileWalletDetection();
+                
+                // Open MetaMask
+                window.location.href = metamaskUrl;
+                
+            } else {
+                // Desktop: Show install prompt
+                if (confirm('MetaMask extension not found. Install MetaMask?')) {
+                    window.open('https://metamask.io/download/', '_blank');
+                }
+            }
+        }
+        
+        function setupMobileWalletDetection() {
+            console.log('Setting up mobile wallet detection...');
+            
+            // Store original URL to detect return from deep link
+            const originalUrl = window.location.href;
+            
+            // Check for wallet connection every 1 second for 30 seconds
+            let attempts = 0;
+            const maxAttempts = 30;
+            
+            const checkInterval = setInterval(async () => {
+                attempts++;
+                console.log(`Checking for wallet connection attempt ${attempts}/${maxAttempts}`);
+                console.log('Current URL:', window.location.href);
+                console.log('window.ethereum available:', !!window.ethereum);
+                
+                // Check if we're back from MetaMask or if ethereum provider appeared
+                if ((window.ethereum || isMetaMaskMobileBrowser()) && !walletConnected) {
+                    console.log('Ethereum provider or MetaMask browser detected after return!');
+                    clearInterval(checkInterval);
+                    
+                    // Wait a bit more for provider to be fully ready
+                    setTimeout(async () => {
+                        try {
+                            if (window.ethereum) {
+                                await connectInjectedWallet();
+                            } else {
+                                // Show manual connect option for MetaMask browser without provider
+                                if (confirm('MetaMask browser detected! Click OK to connect your wallet.')) {
+                                    // Wait for provider and try again
+                                    await waitForEthereumProvider();
+                                    if (window.ethereum) {
+                                        await connectInjectedWallet();
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.log('Auto-connection failed:', error);
+                            // Show manual connect option
+                            if (confirm('Wallet detected! Click OK to connect.')) {
+                                try {
+                                    await connectInjectedWallet();
+                                } catch (e) {
+                                    console.error('Manual connection failed:', e);
+                                }
+                            }
+                        }
+                    }, 1000);
+                } else if (attempts >= maxAttempts) {
+                    console.log('Wallet detection timeout');
+                    clearInterval(checkInterval);
+                    if (!walletConnected && !window.ethereum && !isMetaMaskMobileBrowser()) {
+                        if (confirm('MetaMask app not found. Install MetaMask?')) {
+                            window.open('https://metamask.io/download/', '_blank');
+                        }
+                    }
+                }
+            }, 1000);
+        }
+        
+        async function connectCoinbaseWallet() {
+            if (isMobileDevice()) {
+                const deepLink = `cbwallet://dapp?url=${encodeURIComponent(window.location.href)}`;
+                console.log('Opening Coinbase Wallet...');
+                window.location.href = deepLink;
+                
+                setTimeout(() => {
+                    if (!walletConnected) {
+                        if (confirm('Coinbase Wallet not found. Install Coinbase Wallet?')) {
+                            window.open('https://wallet.coinbase.com/', '_blank');
+                        }
+                    }
+                }, 3000);
+            } else {
+                if (window.ethereum?.isCoinbaseWallet) {
+                    await connectInjectedWallet();
+                } else {
+                    if (confirm('Coinbase Wallet extension not found. Install Coinbase Wallet?')) {
+                        window.open('https://wallet.coinbase.com/', '_blank');
+                    }
+                }
+            }
+        }
+        
+        async function connectTrustWallet() {
+            if (isMobileDevice()) {
+                const deepLink = `trust://dapp_browser?url=${encodeURIComponent(window.location.href)}`;
+                console.log('Opening Trust Wallet...');
+                window.location.href = deepLink;
+                
+                setTimeout(() => {
+                    if (!walletConnected) {
+                        if (confirm('Trust Wallet not found. Install Trust Wallet?')) {
+                            window.open('https://trustwallet.com/', '_blank');
+                        }
+                    }
+                }, 3000);
+            } else {
+                if (window.ethereum?.isTrust) {
+                    await connectInjectedWallet();
+                } else {
+                    alert('Trust Wallet works best on mobile devices');
+                }
+            }
+        }
+        
+        async function connectWalletConnect() {
+            alert('WalletConnect integration coming soon! Please use MetaMask, Coinbase Wallet, or Trust Wallet for now.');
+        }
+        
+        async function connectWithPrivy(method) {
+            if (!window.privyInitialized) {
+                alert('Privy authentication not available. Please use a wallet option.');
+                return;
+            }
+            
+            try {
+                console.log(`Connecting with Privy using ${method}`);
+                
+                if (method === 'email') {
+                    const email = prompt('Enter your email address:');
+                    if (!email) return;
+                    
+                    // Privy email authentication would go here
+                    alert('Email authentication coming soon! Please use a wallet option for now.');
+                } else if (method === 'phone') {
+                    const phone = prompt('Enter your phone number:');
+                    if (!phone) return;
+                    
+                    // Privy phone authentication would go here
+                    alert('Phone authentication coming soon! Please use a wallet option for now.');
+                }
+            } catch (error) {
+                console.error('Privy connection failed:', error);
+                alert('Authentication failed. Please try a wallet option.');
+            }
+        }
+
+        async function handleSuccessfulConnection(address, source) {
+            walletConnected = true;
+            currentWalletAddress = address;
+            
+            // Get chain info if possible
+            let chainId = 'Unknown';
+            let balance = '0';
+            
+            if (window.ethereum) {
+                try {
+                    chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                    chainId = parseInt(chainId, 16);
+                    
+                    const web3 = new Web3(window.ethereum);
+                    const balanceWei = await web3.eth.getBalance(address);
+                    balance = web3.utils.fromWei(balanceWei, 'ether');
+                } catch (e) {
+                    console.log('Could not get chain info:', e);
+                }
+            }
+            
+            // Update UI
+            document.getElementById('connectWalletBtn').textContent = 'Wallet Connected';
+            document.getElementById('connectWalletBtn').style.background = '#22c55e';
+            document.getElementById('connectWalletBtn').disabled = true;
+            
+            // Show wallet info
+            const walletInfo = document.createElement('div');
+            walletInfo.id = 'walletInfo';
+            walletInfo.style.cssText = `
+                background: rgba(34, 197, 94, 0.1);
+                border: 1px solid #22c55e;
+                border-radius: 8px;
+                padding: 15px;
+                margin-top: 15px;
+                font-size: 14px;
+            `;
+            walletInfo.innerHTML = `
+                <div><strong>Connected via ${source}:</strong> ${address.substring(0, 8)}...${address.substring(36)}</div>
+                <div><strong>Chain ID:</strong> ${chainId}</div>
+                <div><strong>Balance:</strong> ${parseFloat(balance).toFixed(4)} ETH</div>
+                <button onclick="disconnectWallet()" style="background: #dc2626; border: none; padding: 8px 16px; border-radius: 6px; color: white; cursor: pointer; margin-top: 10px;">Disconnect</button>
+            `;
+            
+            // Add to header
+            document.querySelector('header > div').appendChild(walletInfo);
+            
+            updateCalculation();
+            console.log(`Wallet connected successfully: ${address} via ${source}`);
+        }
+
+        function handleConnectionError(error, walletType) {
+            console.error(`${walletType} connection failed:`, error);
+            
+            document.getElementById('connectWalletBtn').textContent = 'Connect Wallet';
+            document.getElementById('connectWalletBtn').disabled = false;
+            
+            let errorMessage = `Failed to connect ${walletType}`;
+            if (error.code === 4001) {
+                errorMessage = 'Connection rejected by user';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            alert(errorMessage);
+        }
+
+        function disconnectWallet() {
+            walletConnected = false;
+            currentWalletAddress = null;
+            
+            document.getElementById('connectWalletBtn').textContent = 'Connect Wallet';
+            document.getElementById('connectWalletBtn').style.background = 'linear-gradient(135deg, #2dd4bf, #14b8a6)';
+            document.getElementById('connectWalletBtn').disabled = false;
+            
+            const walletInfo = document.getElementById('walletInfo');
+            if (walletInfo) {
+                walletInfo.remove();
+            }
+            
+            updateCalculation();
+            console.log('Wallet disconnected');
+        }
+
+        function showWalletModal() {
+            console.log('Showing wallet modal...');
+            const modal = document.getElementById('walletModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                console.log('Wallet modal displayed');
+            } else {
+                console.error('Wallet modal element not found!');
+            }
+        }
+
+        function closeWalletModal() {
+            console.log('Closing wallet modal...');
+            const modal = document.getElementById('walletModal');
+            if (modal) {
+                modal.style.display = 'none';
+                console.log('Wallet modal closed');
+            }
+            
+            // Reset connect button
+            document.getElementById('connectWalletBtn').textContent = 'Connect Wallet';
+            document.getElementById('connectWalletBtn').disabled = false;
+            isConnecting = false;
+        }
+
+        async function purchaseTokens() {
+            if (!walletConnected) {
+                alert('Please connect your wallet first');
+                return;
+            }
+            
+            const amount = parseFloat(document.getElementById('purchaseAmount').value);
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid purchase amount');
+                return;
+            }
+            
+            if (amount > 2000) {
+                alert('Maximum purchase amount is 2000 HYPE tokens');
+                return;
+            }
+            
+            try {
+                console.log(`Processing purchase of ${amount} HYPE tokens for ${currentWalletAddress}`);
+                
+                // Simulate transaction
+                alert(`Purchase initiated!\n\nAmount: ${amount} HYPE tokens\nFLOW Received: ${(amount * 25000).toLocaleString()}\nTotal: $${(amount * 12.5).toFixed(2)}\n\nTransaction will be processed on HyperEVM network.`);
+                
+            } catch (error) {
+                console.error('Purchase failed:', error);
+                alert('Purchase failed: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

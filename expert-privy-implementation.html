@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperFlow Protocol - Expert Privy Implementation</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        
+        .calculator-container {
+            background: rgba(45, 212, 191, 0.1);
+            border: 1px solid #2dd4bf;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px auto;
+            max-width: 500px;
+        }
+        
+        .calculator-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .calculator-input {
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 12px;
+            color: #e2e8f0;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .purchase-btn {
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .purchase-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .purchase-btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .wallet-info {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid #22c55e;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
+    
+    <!-- Privy React Auth SDK - Using CDN approach -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@privy-io/react-auth@1.55.0/dist/index.umd.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { PrivyProvider, usePrivy, useWallets } = PrivyAuth;
+
+        // Main App Component with Privy Provider
+        function App() {
+            return (
+                <PrivyProvider
+                    appId="cmebbx3i201jwif0bhy9kxh32"
+                    config={{
+                        appearance: { theme: 'dark' },
+                        embeddedWallets: { createOnLogin: false },
+                        defaultChain: { id: 999, name: 'HyperEVM' },
+                        walletConnect: {
+                            // WalletConnect v2 for full cross-browser support
+                            // You can add your Project ID here for production
+                            enabled: true
+                        },
+                        supportedChains: [
+                            { 
+                                id: 999, 
+                                name: 'HyperEVM', 
+                                nativeCurrency: { name: 'HYPE', symbol: 'HYPE', decimals: 18 },
+                                rpcUrls: ['https://rpc.hyperliquid.xyz/evm']
+                            },
+                            { 
+                                id: 1, 
+                                name: 'Ethereum', 
+                                nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 } 
+                            }
+                        ]
+                    }}
+                >
+                    <HyperFlowPresale />
+                </PrivyProvider>
+            );
+        }
+
+        // Main Presale Component
+        function HyperFlowPresale() {
+            const { ready, authenticated, login, logout } = usePrivy();
+            const { wallets, connectWallet, disconnectWallet } = useWallets();
+            const [purchaseAmount, setPurchaseAmount] = useState('');
+
+            if (!ready) {
+                return (
+                    <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        height: '100vh',
+                        fontSize: '18px'
+                    }}>
+                        Loading HyperFlow Protocol...
+                    </div>
+                );
+            }
+
+            const handleConnectWallet = () => {
+                console.log('Connecting wallet with Privy universal system...');
+                login({
+                    methods: ['wallet', 'walletconnect'],
+                    walletList: ['metamask', 'coinbase', 'trust', 'rainbow', 'zerion', 'okx', 'walletconnect'],
+                    showWalletLoginFirst: true
+                });
+            };
+
+            const updateCalculation = (amount) => {
+                setPurchaseAmount(amount);
+            };
+
+            const purchaseTokens = () => {
+                if (!authenticated || wallets.length === 0) {
+                    alert('Please connect your wallet first');
+                    return;
+                }
+                
+                const amount = parseFloat(purchaseAmount);
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid purchase amount');
+                    return;
+                }
+                
+                if (amount > 2000) {
+                    alert('Maximum purchase amount is 2000 HYPE tokens');
+                    return;
+                }
+                
+                const flowTokens = amount * 25000;
+                const usdValue = amount * 12.5;
+                
+                alert(`Purchase initiated!\n\nAmount: ${amount} HYPE tokens\nFLOW Received: ${flowTokens.toLocaleString()}\nTotal: $${usdValue.toFixed(2)}\n\nTransaction will be processed on HyperEVM network.`);
+            };
+
+            const amount = parseFloat(purchaseAmount) || 0;
+            const flowTokens = amount * 25000;
+            const usdValue = amount * 12.5;
+
+            return (
+                <div>
+                    {/* Header */}
+                    <header style={{ 
+                        background: '#1e293b', 
+                        padding: '20px', 
+                        borderBottom: '1px solid #334155' 
+                    }}>
+                        <div style={{ 
+                            maxWidth: '1200px', 
+                            margin: '0 auto', 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center' 
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <svg width="40" height="40" viewBox="0 0 100 100" style={{ marginRight: '12px' }}>
+                                    <defs>
+                                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style={{ stopColor: '#2dd4bf' }}/>
+                                            <stop offset="100%" style={{ stopColor: '#14b8a6' }}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50" cy="50" r="45" fill="url(#logoGrad)"/>
+                                    <text x="50" y="58" textAnchor="middle" fill="white" fontFamily="Inter" fontWeight="700" fontSize="32">HF</text>
+                                </svg>
+                                <div>
+                                    <h1 style={{ margin: 0, color: '#2dd4bf', fontSize: '24px', fontWeight: 700 }}>HyperFlow</h1>
+                                    <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>Advanced DeFi Protocol</p>
+                                </div>
+                            </div>
+                            
+                            {!authenticated ? (
+                                <button 
+                                    onClick={handleConnectWallet}
+                                    style={{ 
+                                        background: 'linear-gradient(135deg, #2dd4bf, #14b8a6)', 
+                                        border: 'none', 
+                                        padding: '12px 24px', 
+                                        borderRadius: '8px', 
+                                        color: 'white', 
+                                        fontWeight: 600, 
+                                        cursor: 'pointer', 
+                                        fontSize: '16px' 
+                                    }}
+                                >
+                                    Connect Wallet
+                                </button>
+                            ) : (
+                                <div>
+                                    <div style={{ color: '#22c55e', fontSize: '14px', marginBottom: '8px' }}>
+                                        Connected: {wallets.length} wallet(s)
+                                    </div>
+                                    <button 
+                                        onClick={logout}
+                                        style={{ 
+                                            background: '#dc2626', 
+                                            border: 'none', 
+                                            padding: '8px 16px', 
+                                            borderRadius: '6px', 
+                                            color: 'white', 
+                                            cursor: 'pointer',
+                                            fontSize: '14px'
+                                        }}
+                                    >
+                                        Disconnect
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </header>
+
+                    {/* Hero Section */}
+                    <section style={{ 
+                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', 
+                        padding: '80px 20px', 
+                        textAlign: 'center' 
+                    }}>
+                        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                            <h1 style={{ 
+                                fontSize: '48px', 
+                                fontWeight: 800, 
+                                color: '#2dd4bf', 
+                                marginBottom: '20px' 
+                            }}>
+                                HyperFlow Protocol
+                            </h1>
+                            <h2 style={{ 
+                                fontSize: '32px', 
+                                fontWeight: 600, 
+                                color: '#e2e8f0', 
+                                marginBottom: '25px' 
+                            }}>
+                                Expert Privy Implementation
+                            </h2>
+                            <p style={{ 
+                                fontSize: '20px', 
+                                color: '#94a3b8', 
+                                marginBottom: '40px' 
+                            }}>
+                                Universal wallet connection that works on Safari iOS, Chrome, Firefox, Brave - All wallets supported
+                            </p>
+                            
+                            {/* Price Info */}
+                            <div style={{ 
+                                background: 'rgba(45, 212, 191, 0.1)', 
+                                border: '1px solid #2dd4bf', 
+                                borderRadius: '12px', 
+                                padding: '30px', 
+                                margin: '40px auto', 
+                                maxWidth: '600px' 
+                            }}>
+                                <h3 style={{ color: '#2dd4bf', fontSize: '28px', marginBottom: '20px' }}>$0.0005</h3>
+                                <p style={{ fontSize: '18px', marginBottom: '10px' }}>Price per FLOW Token</p>
+                                <p style={{ fontSize: '16px', color: '#94a3b8' }}>25,000 FLOW per 1 HYPE • 2,000 HYPE Hard Cap</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Presale Calculator */}
+                    <section style={{ padding: '60px 20px', background: '#0f172a' }}>
+                        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                            <h2 style={{ 
+                                textAlign: 'center', 
+                                fontSize: '36px', 
+                                color: '#2dd4bf', 
+                                marginBottom: '40px' 
+                            }}>
+                                Presale Calculator
+                            </h2>
+                            
+                            <div className="calculator-container">
+                                <div className="calculator-row">
+                                    <span>HYPE Amount:</span>
+                                    <span>{amount.toLocaleString()}</span>
+                                </div>
+                                <input 
+                                    type="number" 
+                                    className="calculator-input" 
+                                    placeholder="Enter HYPE amount (max 2,000)" 
+                                    min="0" 
+                                    max="2000" 
+                                    value={purchaseAmount}
+                                    onChange={(e) => updateCalculation(e.target.value)}
+                                />
+                                
+                                <div className="calculator-row">
+                                    <span>FLOW Tokens Received:</span>
+                                    <span>{flowTokens.toLocaleString()}</span>
+                                </div>
+                                
+                                <div className="calculator-row">
+                                    <span>USD Value:</span>
+                                    <span>${usdValue.toFixed(2)}</span>
+                                </div>
+                                
+                                <button 
+                                    className="purchase-btn" 
+                                    onClick={purchaseTokens}
+                                    disabled={!authenticated || wallets.length === 0 || amount <= 0 || amount > 2000}
+                                >
+                                    {!authenticated || wallets.length === 0 
+                                        ? 'Connect Wallet to Purchase'
+                                        : amount <= 0 
+                                        ? 'Enter Purchase Amount'
+                                        : `Purchase ${amount} HYPE for ${flowTokens.toLocaleString()} FLOW`
+                                    }
+                                </button>
+                            </div>
+
+                            {/* Connected Wallets Display */}
+                            {authenticated && wallets.length > 0 && (
+                                <div style={{ 
+                                    maxWidth: '500px', 
+                                    margin: '30px auto',
+                                    background: 'rgba(34, 197, 94, 0.1)',
+                                    border: '1px solid #22c55e',
+                                    borderRadius: '12px',
+                                    padding: '20px'
+                                }}>
+                                    <h3 style={{ color: '#22c55e', marginBottom: '15px' }}>Connected Wallets:</h3>
+                                    {wallets.map((wallet, index) => (
+                                        <div key={wallet.address} style={{ 
+                                            marginBottom: '10px',
+                                            padding: '10px',
+                                            background: 'rgba(0,0,0,0.2)',
+                                            borderRadius: '8px'
+                                        }}>
+                                            <div style={{ fontFamily: 'monospace', fontSize: '14px' }}>
+                                                {wallet.address}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                                                {wallet.connectorType} • {wallet.walletClientType || 'Wallet'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                </div>
+            );
+        }
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

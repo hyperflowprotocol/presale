@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Wallet Connection - HyperFlow</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            color: #0f172a;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            min-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Wallet Test</h1>
+    
+    <button onclick="connectMetaMask()">Connect MetaMask</button>
+    <button onclick="showMobileWallets()">Mobile Wallets</button>
+    
+    <div class="status" id="status">Ready to connect</div>
+    
+    <div id="mobileWallets" style="display: none;">
+        <h3>Mobile Wallet Links:</h3>
+        <div id="walletLinks"></div>
+    </div>
+
+    <script>
+        async function connectMetaMask() {
+            const status = document.getElementById('status');
+            
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    console.log('Requesting MetaMask connection...');
+                    const accounts = await window.ethereum.request({ 
+                        method: 'eth_requestAccounts' 
+                    });
+                    
+                    if (accounts.length > 0) {
+                        status.innerHTML = `✅ MetaMask Connected<br>Address: ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`;
+                        status.style.color = '#22c55e';
+                        
+                        // Get network info
+                        try {
+                            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                            status.innerHTML += `<br>Network: ${chainId}`;
+                        } catch (e) {
+                            console.log('Could not get network info:', e);
+                        }
+                    }
+                } catch (error) {
+                    console.error('MetaMask connection error:', error);
+                    status.innerHTML = `❌ Error: ${error.message}`;
+                    status.style.color = '#ef4444';
+                }
+            } else {
+                status.innerHTML = '❌ MetaMask not found. Install MetaMask or use mobile wallet links.';
+                status.style.color = '#f59e0b';
+                showMobileWallets();
+            }
+        }
+        
+        function showMobileWallets() {
+            const container = document.getElementById('walletLinks');
+            const mobileSection = document.getElementById('mobileWallets');
+            const currentUrl = encodeURIComponent(window.location.href);
+            
+            const wallets = [
+                {
+                    name: 'MetaMask Mobile',
+                    url: `https://metamask.app.link/dapp/${currentUrl}`,
+                    icon: '🦊'
+                },
+                {
+                    name: 'Trust Wallet',
+                    url: `https://link.trustwallet.com/open_url?coin_id=60&url=${currentUrl}`,
+                    icon: '🛡️'
+                },
+                {
+                    name: 'Coinbase Wallet',
+                    url: `https://go.cb-w.com/dapp?cb_url=${currentUrl}`,
+                    icon: '🔵'
+                },
+                {
+                    name: 'Rainbow Wallet',
+                    url: `https://rnbwapp.com/browser?url=${currentUrl}`,
+                    icon: '🌈'
+                }
+            ];
+            
+            container.innerHTML = wallets.map(wallet => 
+                `<div style="margin: 10px 0;">
+                    <a href="${wallet.url}" 
+                       style="color: #2dd4bf; text-decoration: none; display: block; padding: 15px; background: rgba(45, 212, 191, 0.1); border-radius: 8px; text-align: center;">
+                        ${wallet.icon} ${wallet.name}
+                    </a>
+                </div>`
+            ).join('');
+            
+            mobileSection.style.display = 'block';
+        }
+        
+        // Check if MetaMask is available on load
+        window.addEventListener('load', () => {
+            const status = document.getElementById('status');
+            if (typeof window.ethereum !== 'undefined') {
+                status.innerHTML = 'MetaMask detected! Click "Connect MetaMask" to begin.';
+                status.style.color = '#22c55e';
+            } else {
+                status.innerHTML = 'No Web3 wallet detected. Try mobile wallet links.';
+                status.style.color = '#f59e0b';
+                showMobileWallets();
+            }
+        });
+    </script>
+</body>
+</html>

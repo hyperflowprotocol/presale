@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            text-align: center;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            background: white;
+            color: #14b8a6;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>HyperFlow Test Page</h1>
+        <p>If you can see this, the server is working correctly!</p>
+        <p>Server Status: <span id="status">Testing...</span></p>
+        <button class="btn" onclick="testFunction()">Test JavaScript</button>
+    </div>
+
+    <script>
+        document.getElementById('status').textContent = 'Active ✓';
+        
+        function testFunction() {
+            alert('JavaScript is working!');
+        }
+        
+        console.log('HyperFlow test page loaded successfully');
+    </script>
+</body>
+</html>

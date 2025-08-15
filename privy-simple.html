@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperFlow Protocol - Working Privy</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: #1e293b;
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo h1 {
+            margin: 0;
+            color: #2dd4bf;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .logo p {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        .connect-btn {
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .connect-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .connect-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .main-content {
+            padding: 80px 20px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .title {
+            font-size: 48px;
+            font-weight: 800;
+            color: #2dd4bf;
+            margin-bottom: 20px;
+        }
+        
+        .subtitle {
+            font-size: 32px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 25px;
+        }
+        
+        .description {
+            font-size: 20px;
+            color: #94a3b8;
+            margin-bottom: 40px;
+        }
+        
+        .wallet-status {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid #22c55e;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status-text {
+            color: #22c55e;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .wallet-address {
+            font-family: monospace;
+            font-size: 12px;
+            color: #94a3b8;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <svg width="40" height="40" viewBox="0 0 100 100">
+                <defs>
+                    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#2dd4bf"/>
+                        <stop offset="100%" style="stop-color:#14b8a6"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="45" fill="url(#logoGrad)"/>
+                <text x="50" y="58" text-anchor="middle" fill="white" font-family="Inter" font-weight="700" font-size="32">HF</text>
+            </svg>
+            <div>
+                <h1>HyperFlow</h1>
+                <p>Working Privy Integration</p>
+            </div>
+        </div>
+        
+        <button id="connectBtn" class="connect-btn">
+            Connect Wallet
+        </button>
+    </div>
+
+    <div class="main-content">
+        <h1 class="title">Working Privy</h1>
+        <h2 class="subtitle">Simple Implementation</h2>
+        <p class="description">
+            Direct Privy integration with your App ID and WalletConnect
+        </p>
+        
+        <div id="walletStatus" class="wallet-status">
+            <div class="status-text">Wallet Connected</div>
+            <div id="walletAddress" class="wallet-address"></div>
+        </div>
+    </div>
+
+    <!-- Privy SDK Direct -->
+    <script src="https://auth.privy.io/js/auth.js"></script>
+    
+    <script>
+        const APP_ID = 'cmebbx3i201jwif0bhy9kxh32';
+        const WALLETCONNECT_PROJECT_ID = 'ca21cf0275758f8258a17ae99f6148d4';
+        
+        const connectBtn = document.getElementById('connectBtn');
+        const walletStatus = document.getElementById('walletStatus');
+        const walletAddress = document.getElementById('walletAddress');
+        
+        let privy = null;
+        
+        // Initialize Privy when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing Privy with App ID:', APP_ID);
+            
+            try {
+                // Initialize Privy
+                privy = window.Privy.initialize(APP_ID, {
+                    appearance: {
+                        theme: 'dark',
+                        accentColor: '#2dd4bf',
+                        borderRadius: 12,
+                        logo: 'https://replit.com/cdn-cgi/image/width=64,height=64,fit=cover,gravity=0.5x0.5,format=auto/https://storage.googleapis.com/replit/images/1755112079893_62dfdc6f8f23b4cb20fca19f7862c56a.png',
+                        landingHeader: 'Connect to HyperFlow',
+                        showWalletLoginFirst: false
+                    },
+                    loginMethods: ['wallet', 'email', 'google', 'discord'],
+                    embeddedWallets: {
+                        createOnLogin: 'users-without-wallets'
+                    },
+                    walletConnect: {
+                        projectId: WALLETCONNECT_PROJECT_ID
+                    },
+                    defaultChain: {
+                        id: 999,
+                        name: 'HyperEVM',
+                        nativeCurrency: {
+                            decimals: 18,
+                            name: 'HYPE',
+                            symbol: 'HYPE'
+                        },
+                        rpcUrls: {
+                            default: ['https://rpc.hyperliquid.xyz/evm']
+                        }
+                    }
+                });
+                
+                console.log('Privy initialized successfully');
+                setupEventHandlers();
+                
+            } catch (error) {
+                console.error('Failed to initialize Privy:', error);
+                connectBtn.textContent = 'Privy Error';
+                connectBtn.disabled = true;
+            }
+        });
+        
+        function setupEventHandlers() {
+            // Set up connect button
+            connectBtn.onclick = function() {
+                console.log('Connect button clicked');
+                if (privy) {
+                    privy.login();
+                } else {
+                    console.error('Privy not initialized');
+                }
+            };
+            
+            // Listen for authentication events
+            if (privy) {
+                privy.onAuthenticationChange(function(isAuthenticated, user) {
+                    console.log('Auth change:', isAuthenticated, user);
+                    
+                    if (isAuthenticated && user) {
+                        console.log('User authenticated:', user);
+                        connectBtn.textContent = 'Disconnect';
+                        
+                        // Show wallet address if available
+                        if (user.wallet && user.wallet.address) {
+                            walletStatus.style.display = 'block';
+                            walletAddress.textContent = user.wallet.address;
+                        }
+                        
+                        // Update button to disconnect
+                        connectBtn.onclick = function() {
+                            privy.logout();
+                        };
+                        
+                    } else {
+                        console.log('User not authenticated');
+                        connectBtn.textContent = 'Connect Wallet';
+                        walletStatus.style.display = 'none';
+                        
+                        // Reset button to connect
+                        connectBtn.onclick = function() {
+                            privy.login();
+                        };
+                    }
+                });
+            }
+        }
+        
+        // Fallback for older browsers
+        if (!window.Privy) {
+            console.log('Privy not available, loading fallback...');
+            connectBtn.textContent = 'Loading...';
+            connectBtn.disabled = true;
+            
+            // Try alternative loading
+            setTimeout(function() {
+                if (!window.Privy) {
+                    console.error('Privy SDK failed to load');
+                    connectBtn.textContent = 'SDK Error';
+                } else {
+                    document.dispatchEvent(new Event('DOMContentLoaded'));
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

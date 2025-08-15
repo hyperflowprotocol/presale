@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperFlow Protocol - Presale</title>
+    
+    <link rel="stylesheet" href="presale-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- React and Privy -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@privy-io/react-auth@latest/dist/index.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { PrivyProvider, usePrivy, useWallets } = window.PrivyReactAuth;
+
+        // Main App Component
+        function App() {
+            return (
+                <PrivyProvider
+                    appId="cmebbx3i201jwif0bhy9kxh32"
+                    config={{
+                        appearance: {
+                            theme: 'dark',
+                            accentColor: '#2dd4bf',
+                            logo: 'https://raw.githubusercontent.com/hyperflowprotocol/hyperflow-presale-live/main/hyperflow_logo.svg',
+                            landingHeader: 'Connect to HyperFlow',
+                            showWalletLoginFirst: false,
+                            walletList: ['metamask', 'rainbow', 'coinbase_wallet', 'wallet_connect']
+                        },
+                        loginMethods: ['wallet', 'email', 'google', 'discord'],
+                        embeddedWallets: {
+                            createOnLogin: 'users-without-wallets'
+                        },
+                        defaultChain: {
+                            id: 999,
+                            name: 'HyperEVM',
+                            nativeCurrency: {
+                                decimals: 18,
+                                name: 'HYPE',
+                                symbol: 'HYPE'
+                            },
+                            rpcUrls: {
+                                default: {
+                                    http: ['https://rpc.hyperliquid.xyz/evm']
+                                }
+                            }
+                        }
+                    }}
+                >
+                    <HyperFlowPresale />
+                </PrivyProvider>
+            );
+        }
+
+        // Presale Component
+        function HyperFlowPresale() {
+            const { ready, authenticated, user, login, logout } = usePrivy();
+            const { wallets } = useWallets();
+            const [timeLeft, setTimeLeft] = useState({
+                days: 30,
+                hours: 0,
+                minutes: 0,
+                seconds: 0
+            });
+
+            // Timer effect
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                    const now = new Date();
+                    const diff = endDate - now;
+
+                    if (diff > 0) {
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                        setTimeLeft({ days, hours, minutes, seconds });
+                    }
+                }, 1000);
+
+                return () => clearInterval(timer);
+            }, []);
+
+            const handleConnect = () => {
+                if (authenticated) {
+                    logout();
+                } else {
+                    login();
+                }
+            };
+
+            const getConnectButtonText = () => {
+                if (!ready) return 'Loading...';
+                if (authenticated && user) {
+                    if (wallets[0]) {
+                        const address = wallets[0].address;
+                        return `${address.slice(0, 6)}...${address.slice(-4)}`;
+                    }
+                    return 'Connected';
+                }
+                return 'Connect Wallet';
+            };
+
+            return (
+                <div>
+                    {/* Navigation */}
+                    <nav className="nav">
+                        <div className="nav-container">
+                            <div className="nav-brand">
+                                <img src="hyperflow_logo.svg?v=8" alt="HyperFlow" className="nav-logo" />
+                                <span className="nav-title">HyperFlow Protocol</span>
+                            </div>
+                            <div className="nav-links">
+                                <a href="#presale" className="nav-link">Presale</a>
+                                <a href="#docs" className="nav-link">Docs</a>
+                                <a href="#community" className="nav-link">Community</a>
+                            </div>
+                        </div>
+                    </nav>
+
+                    {/* Hero Section */}
+                    <section className="hero">
+                        <div className="hero-background">
+                            <img src="hyperflow_hero_banner.svg" alt="HyperFlow Banner" className="hero-banner" />
+                        </div>
+                        <div className="hero-content">
+                            <h1 className="hero-title">HyperFlow Protocol</h1>
+                            <p className="hero-subtitle">Advanced DeFi Infrastructure for HyperEVM</p>
+                            <div className="hero-stats">
+                                <div className="stat">
+                                    <span className="stat-value">$0.0005</span>
+                                    <span className="stat-label">Token Price</span>
+                                </div>
+                                <div className="stat">
+                                    <span className="stat-value">25,000:1</span>
+                                    <span className="stat-label">FLOW:HYPE Ratio</span>
+                                </div>
+                                <div className="stat">
+                                    <span className="stat-value">2,000</span>
+                                    <span className="stat-label">HYPE Hard Cap</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Presale Section */}
+                    <section id="presale" className="presale-section">
+                        <div className="container">
+                            <div className="section-header">
+                                <h2>HyperFlow Presale</h2>
+                                <p>Join the next generation of DeFi on HyperEVM</p>
+                            </div>
+
+                            {/* Timer */}
+                            <div className="presale-timer">
+                                <h3>Presale Ends In</h3>
+                                <div className="timer">
+                                    <div className="timer-unit">
+                                        <span className="timer-value">{timeLeft.days.toString().padStart(2, '0')}</span>
+                                        <span className="timer-label">Days</span>
+                                    </div>
+                                    <div className="timer-unit">
+                                        <span className="timer-value">{timeLeft.hours.toString().padStart(2, '0')}</span>
+                                        <span className="timer-label">Hours</span>
+                                    </div>
+                                    <div className="timer-unit">
+                                        <span className="timer-value">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                                        <span className="timer-label">Minutes</span>
+                                    </div>
+                                    <div className="timer-unit">
+                                        <span className="timer-value">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+                                        <span className="timer-label">Seconds</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Connect Wallet */}
+                            <div className="wallet-section">
+                                <button 
+                                    className="connect-wallet-btn"
+                                    onClick={handleConnect}
+                                    disabled={!ready}
+                                >
+                                    {getConnectButtonText()}
+                                </button>
+                                <p className="wallet-info">Connect your wallet to participate in the presale</p>
+                                
+                                {authenticated && user && (
+                                    <div className="user-info">
+                                        <p>Welcome! {user.email?.address || 'Wallet connected'}</p>
+                                        {wallets[0] && (
+                                            <p>Wallet: {wallets[0].address}</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Presale Progress */}
+                            <div className="presale-progress">
+                                <h3>Presale Progress</h3>
+                                <div className="progress-bar">
+                                    <div className="progress-fill" style={{width: '0%'}}></div>
+                                </div>
+                                <div className="progress-stats">
+                                    <span>0 HYPE raised</span>
+                                    <span>2,000 HYPE goal</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            );
+        }
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

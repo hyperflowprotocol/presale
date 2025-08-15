@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Debug - HyperFlow</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            color: #0f172a;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .debug-info {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(45, 212, 191, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HyperFlow Wallet Debug</h1>
+        
+        <div class="debug-info" id="environmentInfo">
+            Loading environment info...
+        </div>
+        
+        <button onclick="testWalletConnection()">Test Wallet Connection</button>
+        <button onclick="showMobileOptions()">Show Mobile Options</button>
+        <button onclick="detectPlatform()">Detect Platform</button>
+        
+        <div class="status" id="status">
+            Ready to test wallet connections
+        </div>
+        
+        <div id="mobileLinks" style="display: none;">
+            <h3>Mobile Wallet Links:</h3>
+            <div id="linkContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Display environment information
+        function updateEnvironmentInfo() {
+            const info = {
+                'URL': window.location.href,
+                'Host': window.location.host,
+                'Pathname': window.location.pathname,
+                'User Agent': navigator.userAgent.substring(0, 100) + '...',
+                'Is Mobile': /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                'Has Ethereum': typeof window.ethereum !== 'undefined',
+                'Ethereum Provider': window.ethereum ? 'Available' : 'Not Found'
+            };
+            
+            const html = Object.entries(info).map(([key, value]) => 
+                `<div><strong>${key}:</strong> ${value}</div>`
+            ).join('');
+            
+            document.getElementById('environmentInfo').innerHTML = html;
+        }
+        
+        async function testWalletConnection() {
+            const status = document.getElementById('status');
+            status.innerHTML = 'Testing wallet connection...';
+            
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    console.log('Requesting accounts from MetaMask...');
+                    const accounts = await window.ethereum.request({ 
+                        method: 'eth_requestAccounts' 
+                    });
+                    
+                    if (accounts.length > 0) {
+                        status.innerHTML = `✅ MetaMask Connected!<br>
+                            Address: ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}<br>
+                            Network ID: Checking...`;
+                        
+                        // Get network info
+                        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                        status.innerHTML += `<br>Chain ID: ${chainId}`;
+                    }
+                } catch (error) {
+                    console.error('Connection error:', error);
+                    status.innerHTML = `❌ Connection failed: ${error.message}`;
+                }
+            } else {
+                status.innerHTML = `❌ No Web3 wallet detected. Install MetaMask or use mobile wallet links below.`;
+                showMobileOptions();
+            }
+        }
+        
+        function showMobileOptions() {
+            const container = document.getElementById('linkContainer');
+            const mobileLinks = document.getElementById('mobileLinks');
+            const currentUrl = encodeURIComponent(window.location.href);
+            
+            const wallets = [
+                {
+                    name: 'MetaMask Mobile',
+                    url: `https://metamask.app.link/dapp/${currentUrl}`,
+                    icon: '🦊'
+                },
+                {
+                    name: 'Trust Wallet',
+                    url: `https://link.trustwallet.com/open_url?coin_id=60&url=${currentUrl}`,
+                    icon: '🛡️'
+                },
+                {
+                    name: 'Rainbow Wallet',
+                    url: `https://rnbwapp.com/browser?url=${currentUrl}`,
+                    icon: '🌈'
+                },
+                {
+                    name: 'Coinbase Wallet',
+                    url: `https://go.cb-w.com/dapp?cb_url=${currentUrl}`,
+                    icon: '🔵'
+                }
+            ];
+            
+            container.innerHTML = wallets.map(wallet => 
+                `<div style="margin: 10px 0;">
+                    <a href="${wallet.url}" style="color: #2dd4bf; text-decoration: none; display: block; padding: 10px; background: rgba(45, 212, 191, 0.1); border-radius: 8px;">
+                        ${wallet.icon} ${wallet.name}
+                    </a>
+                </div>`
+            ).join('');
+            
+            mobileLinks.style.display = 'block';
+        }
+        
+        function detectPlatform() {
+            const status = document.getElementById('status');
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            status.innerHTML = `Platform Detection:<br>
+                Device: ${isMobile ? 'Mobile' : 'Desktop'}<br>
+                User Agent: ${navigator.userAgent}<br>
+                Screen: ${screen.width}x${screen.height}<br>
+                Window: ${window.innerWidth}x${window.innerHeight}`;
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            updateEnvironmentInfo();
+            console.log('Wallet debug page loaded');
+        });
+    </script>
+</body>
+</html>

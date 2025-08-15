@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperFlow Protocol - Presale</title>
+    <!-- Privy Integration Enabled -->
+    
+    <link rel="stylesheet" href="presale-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Privy SDK -->
+    <script src="https://auth.privy.io/js/auth.js"></script>
+</head>
+<body>
+
+    <!-- Loading Bar -->
+    <div id="loadingBar" class="loading-bar">
+        <div class="loading-progress"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="hyperflow_logo.svg?v=9" alt="HyperFlow Protocol" class="logo-svg">
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Main Site</a></li>
+                <li><a href="https://hyperflowprotocol.github.io" target="_blank">Whitepaper</a></li>
+                <li><a href="https://x.com/hflow_protocol?s=21" target="_blank">Twitter</a></li>
+                <li><a href="#presale" class="cta-button">Join Presale</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Banner -->
+    <div style="width: 100%; margin-top: 80px; margin-bottom: 40px;">
+        <img src="hyperflow_hero_banner.svg" alt="HyperFlow Protocol Hero Banner" style="width: 100%; height: auto; display: block;">
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background"></div>
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="title-gradient">HyperFlow Presale</span>
+                    <span class="title-subtitle">Fair Access • Democratic Distribution • No Tiers</span>
+                </h1>
+                <p class="hero-description">
+                    Join the HyperFlow Protocol presale with fixed exchange rate of 25,000 FLOW per HYPE. 
+                    Fair launch design ensures equal access for all HyperEVM ecosystem participants.
+                </p>
+                
+                <div class="presale-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">50M</div>
+                        <div class="stat-label">FLOW Tokens</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">25,000</div>
+                        <div class="stat-label">FLOW per HYPE</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">2,000</div>
+                        <div class="stat-label">HYPE Hard Cap</div>
+                    </div>
+                </div>
+
+                <div class="presale-timer">
+                    <h3>Presale Status</h3>
+                    <div class="timer-display">
+                        <div class="timer-item">
+                            <div class="timer-number" id="days">--</div>
+                            <div class="timer-label">Days</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-number" id="hours">--</div>
+                            <div class="timer-label">Hours</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-number" id="minutes">--</div>
+                            <div class="timer-label">Minutes</div>
+                        </div>
+                        <div class="timer-item">
+                            <div class="timer-number" id="seconds">--</div>
+                            <div class="timer-label">Seconds</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Presale Section -->
+    <section id="presale" class="presale-section">
+        <div class="container">
+            <div class="presale-content">
+                <h2 class="section-title">Join the Presale</h2>
+                <p class="section-description">
+                    Secure your FLOW tokens at the presale price of 25,000 FLOW per HYPE. 
+                    Connect your wallet and participate in the fair launch.
+                </p>
+
+                <div class="presale-container">
+                    <div class="presale-card">
+                        <div class="progress-section">
+                            <div class="progress-header">
+                                <h3>Presale Progress</h3>
+                                <span class="progress-percentage" id="progressPercentage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-stats">
+                                <div class="stat">
+                                    <span class="stat-label">Raised</span>
+                                    <span class="stat-value" id="raisedAmount">0 HYPE</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Hard Cap</span>
+                                    <span class="stat-value">2,000 HYPE</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wallet Connection Section -->
+                        <div class="wallet-section">
+                            <div id="walletConnectionContainer">
+                                <button id="connectWallet" class="connect-button">
+                                    Connect Wallet
+                                </button>
+                            </div>
+                            <div id="walletConnectedContainer" style="display: none;">
+                                <div class="wallet-info">
+                                    <div class="wallet-address" id="walletAddress"></div>
+                                    <button id="disconnectWallet" class="disconnect-button">Disconnect</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Purchase Section -->
+                        <div class="purchase-section" id="purchaseSection" style="display: none;">
+                            <div class="input-group">
+                                <label for="ethAmount">HYPE Amount</label>
+                                <input type="number" id="ethAmount" placeholder="Enter HYPE amount" min="0.01" step="0.01">
+                                <div class="conversion-info">
+                                    <span id="tokenAmount">0 FLOW tokens</span>
+                                </div>
+                            </div>
+                            <button id="purchaseButton" class="purchase-button">
+                                Purchase FLOW Tokens
+                            </button>
+                        </div>
+
+                        <!-- Disclaimer -->
+                        <div class="disclaimer">
+                            <p>
+                                <strong>Notice:</strong> Cryptocurrency investments carry risk. 
+                                This presale is available to participants worldwide. 
+                                Please ensure compliance with your local regulations.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Presale Info -->
+                    <div class="presale-info">
+                        <h3>Presale Details</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <h4>Exchange Rate</h4>
+                                <p>1 HYPE = 25,000 FLOW tokens</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Minimum Purchase</h4>
+                                <p>0.01 HYPE (~250 FLOW)</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Maximum Purchase</h4>
+                                <p>No individual limit</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Token Distribution</h4>
+                                <p>Within 24 hours of presale completion</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Supported Networks</h4>
+                                <p>HyperEVM, Ethereum, BSC</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Vesting Schedule</h4>
+                                <p>Immediate unlock at TGE</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title">Why Choose HyperFlow?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🏗️</div>
+                    <h3>Native HyperCore Integration</h3>
+                    <p>First protocol with direct HyperCore orderbook access for superior liquidity and execution.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Cross-Protocol Aggregation</h3>
+                    <p>Intelligent routing across multiple DEXs and protocols for optimal yield optimization.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Advanced Risk Management</h3>
+                    <p>Delta-neutral strategies and institutional-grade risk controls protect your capital.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>70% Revenue Sharing</h3>
+                    <p>Majority of protocol revenue distributed directly to FLOW token holders through staking.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3>When will tokens be distributed?</h3>
+                    <p>FLOW tokens will be distributed within 24 hours of presale completion to all participants.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>What makes HyperFlow different?</h3>
+                    <p>HyperFlow offers native HyperCore integration, cross-protocol optimization, and 70% revenue sharing with token holders.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Is there a minimum purchase?</h3>
+                    <p>Yes, the minimum purchase is 0.01 HYPE, which equals approximately 250 FLOW tokens.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>What wallets are supported?</h3>
+                    <p>MetaMask, Rainbow, Coinbase Wallet, Trust Wallet, and 100+ other wallets through our universal connection system.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="hyperflow_logo.svg" alt="HyperFlow Protocol" class="footer-logo">
+                    <p>Advanced DeFi infrastructure for the HyperEVM ecosystem</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Protocol</h4>
+                        <ul>
+                            <li><a href="https://hyperflowprotocol.github.io" target="_blank">Whitepaper</a></li>
+                            <li><a href="https://hyperflowprotocol.github.io/hyperflow-tokenomics" target="_blank">Tokenomics</a></li>
+                            <li><a href="https://hyperflowprotocol.github.io/hyperflow-architecture" target="_blank">Architecture</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Community</h4>
+                        <ul>
+                            <li><a href="https://x.com/hflow_protocol?s=21" target="_blank">Twitter</a></li>
+                            <li><a href="https://t.me/hyperflowprotocol" target="_blank">Telegram</a></li>
+                            <li><a href="https://discord.gg/hyperflow" target="_blank">Discord</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="https://github.com/hyperflowprotocol" target="_blank">GitHub</a></li>
+                            <li><a href="https://hyperflowprotocol.github.io/hyperflow-utilities" target="_blank">Documentation</a></li>
+                            <li><a href="mailto:team@hyperflow.finance">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 HyperFlow Protocol. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="presale-privy.js"></script>
+</body>
+</html>

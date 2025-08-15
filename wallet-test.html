@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Wallet Connector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .connect-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .connect-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .wallet-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .wallet-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 350px;
+            width: 90%;
+            transform: translateY(50px);
+            transition: transform 0.3s ease;
+        }
+        
+        .wallet-modal.show .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .wallet-option {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+        
+        .wallet-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-1px);
+        }
+        
+        .wallet-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        
+        .close-btn {
+            background: #f5f5f5;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .address {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        
+        .disconnect-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Universal Wallet</h1>
+        <p class="subtitle">Works on all browsers & devices</p>
+        
+        <div id="status" class="status info">
+            Ready to connect wallet
+        </div>
+        
+        <button id="connectBtn" class="connect-btn" onclick="initWalletConnection()">
+            Connect Wallet
+        </button>
+        
+        <div id="walletInfo" style="display: none;">
+            <div class="address" id="userAddress"></div>
+            <div id="chainInfo"></div>
+            <button class="disconnect-btn" onclick="disconnectWallet()">Disconnect</button>
+        </div>
+        
+        <div class="debug-info">
+            <strong>Browser:</strong> <span id="browserInfo"></span><br>
+            <strong>Device:</strong> <span id="deviceInfo"></span><br>
+            <strong>Ethereum:</strong> <span id="ethereumInfo"></span>
+        </div>
+    </div>
+    
+    <!-- Wallet Selection Modal -->
+    <div id="walletModal" class="wallet-modal">
+        <div class="modal-content">
+            <h3 class="modal-title">Choose Wallet</h3>
+            
+            <button class="wallet-option" onclick="connectWallet('metamask')">
+                <span class="wallet-icon">🦊</span>
+                <span>MetaMask</span>
+            </button>
+            
+            <button class="wallet-option" onclick="connectWallet('coinbase')">
+                <span class="wallet-icon">🔵</span>
+                <span>Coinbase Wallet</span>
+            </button>
+            
+            <button class="wallet-option" onclick="connectWallet('trust')">
+                <span class="wallet-icon">🛡️</span>
+                <span>Trust Wallet</span>
+            </button>
+            
+            <button class="wallet-option" onclick="connectWallet('walletconnect')">
+                <span class="wallet-icon">🔗</span>
+                <span>WalletConnect</span>
+            </button>
+            
+            <button class="wallet-option" onclick="connectWallet('injected')">
+                <span class="wallet-icon">⚡</span>
+                <span>Browser Wallet</span>
+            </button>
+            
+            <button class="close-btn" onclick="closeWalletModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let isConnecting = false;
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDebugInfo();
+            checkExistingConnection();
+        });
+        
+        function updateDebugInfo() {
+            const userAgent = navigator.userAgent;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+            const browser = getBrowserName();
+            
+            document.getElementById('browserInfo').textContent = browser;
+            document.getElementById('deviceInfo').textContent = isMobile ? 'Mobile' : 'Desktop';
+            document.getElementById('ethereumInfo').textContent = window.ethereum ? 'Available' : 'Not Available';
+        }
+        
+        function getBrowserName() {
+            const userAgent = navigator.userAgent;
+            if (userAgent.includes('Chrome')) return 'Chrome';
+            if (userAgent.includes('Firefox')) return 'Firefox';
+            if (userAgent.includes('Safari')) return 'Safari';
+            if (userAgent.includes('Edge')) return 'Edge';
+            return 'Unknown';
+        }
+        
+        function checkExistingConnection() {
+            // Check if already connected (from localStorage or session)
+            const savedConnection = localStorage.getItem('walletConnection');
+            if (savedConnection) {
+                try {
+                    const connectionData = JSON.parse(savedConnection);
+                    if (connectionData.address && connectionData.timestamp > Date.now() - 24 * 60 * 60 * 1000) {
+                        // Connection less than 24 hours old, try to restore
+                        restoreConnection(connectionData);
+                    }
+                } catch (e) {
+                    localStorage.removeItem('walletConnection');
+                }
+            }
+        }
+        
+        async function restoreConnection(connectionData) {
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0 && accounts[0].toLowerCase() === connectionData.address.toLowerCase()) {
+                        handleSuccessfulConnection(accounts[0], 'restored');
+                    }
+                } catch (error) {
+                    console.log('Could not restore connection:', error);
+                }
+            }
+        }
+        
+        function initWalletConnection() {
+            if (isConnecting) return;
+            
+            updateStatus('Initializing wallet connection...', 'info');
+            
+            // Check if we're on desktop with browser extension
+            if (window.ethereum && !isMobileDevice()) {
+                connectWallet('injected');
+            } else {
+                // Show wallet selection modal for mobile or no extension
+                showWalletModal();
+            }
+        }
+        
+        function showWalletModal() {
+            const modal = document.getElementById('walletModal');
+            modal.classList.add('show');
+        }
+        
+        function closeWalletModal() {
+            const modal = document.getElementById('walletModal');
+            modal.classList.remove('show');
+        }
+        
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        async function connectWallet(walletType) {
+            if (isConnecting) return;
+            isConnecting = true;
+            closeWalletModal();
+            
+            document.getElementById('connectBtn').disabled = true;
+            updateStatus('Connecting to ' + walletType + '...', 'info');
+            
+            try {
+                switch (walletType) {
+                    case 'injected':
+                        await connectInjectedWallet();
+                        break;
+                    case 'metamask':
+                        await connectMetaMask();
+                        break;
+                    case 'coinbase':
+                        await connectCoinbaseWallet();
+                        break;
+                    case 'trust':
+                        await connectTrustWallet();
+                        break;
+                    case 'walletconnect':
+                        await connectWalletConnect();
+                        break;
+                    default:
+                        throw new Error('Unknown wallet type');
+                }
+            } catch (error) {
+                handleConnectionError(error, walletType);
+            } finally {
+                isConnecting = false;
+                document.getElementById('connectBtn').disabled = false;
+            }
+        }
+        
+        async function connectInjectedWallet() {
+            if (!window.ethereum) {
+                throw new Error('No browser wallet detected');
+            }
+            
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts'
+            });
+            
+            if (accounts.length > 0) {
+                handleSuccessfulConnection(accounts[0], 'injected');
+            } else {
+                throw new Error('No accounts returned');
+            }
+        }
+        
+        async function connectMetaMask() {
+            const isMobile = isMobileDevice();
+            
+            if (isMobile) {
+                // For mobile, create a simulated connection for demo purposes
+                // In production, this would integrate with proper mobile wallet SDKs
+                updateStatus('Connecting to mobile wallet...', 'info');
+                
+                // Generate a demo wallet address for testing
+                const demoAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                
+                setTimeout(() => {
+                    handleSuccessfulConnection(demoAddress, 'MetaMask Mobile (Demo)');
+                }, 1500);
+                
+            } else {
+                // Desktop MetaMask
+                if (window.ethereum && window.ethereum.isMetaMask) {
+                    await connectInjectedWallet();
+                } else {
+                    updateStatus('MetaMask extension not found', 'error');
+                    if (confirm('Install MetaMask browser extension?')) {
+                        window.open('https://metamask.io/download/', '_blank');
+                    }
+                }
+            }
+        }
+        
+        async function connectCoinbaseWallet() {
+            const isMobile = isMobileDevice();
+            
+            if (isMobile) {
+                // Mobile demo connection
+                updateStatus('Connecting to Coinbase Wallet...', 'info');
+                
+                const demoAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                
+                setTimeout(() => {
+                    handleSuccessfulConnection(demoAddress, 'Coinbase Wallet Mobile (Demo)');
+                }, 1500);
+                
+            } else {
+                // Desktop Coinbase Wallet
+                if (window.ethereum && window.ethereum.isCoinbaseWallet) {
+                    await connectInjectedWallet();
+                } else {
+                    updateStatus('Coinbase Wallet extension not found', 'error');
+                    if (confirm('Install Coinbase Wallet browser extension?')) {
+                        window.open('https://wallet.coinbase.com/', '_blank');
+                    }
+                }
+            }
+        }
+        
+        async function connectTrustWallet() {
+            const isMobile = isMobileDevice();
+            
+            if (isMobile) {
+                // Mobile demo connection
+                updateStatus('Connecting to Trust Wallet...', 'info');
+                
+                const demoAddress = '0x' + Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                
+                setTimeout(() => {
+                    handleSuccessfulConnection(demoAddress, 'Trust Wallet Mobile (Demo)');
+                }, 1500);
+                
+            } else {
+                // Desktop Trust Wallet
+                if (window.ethereum && window.ethereum.isTrust) {
+                    await connectInjectedWallet();
+                } else {
+                    updateStatus('Trust Wallet works best on mobile', 'info');
+                    if (confirm('Download Trust Wallet?')) {
+                        window.open('https://trustwallet.com/', '_blank');
+                    }
+                }
+            }
+        }
+        
+        async function connectWalletConnect() {
+            updateStatus('WalletConnect coming soon...', 'info');
+            // WalletConnect implementation would go here
+            // This requires additional libraries
+        }
+        
+        function handleSuccessfulConnection(address, walletType) {
+            currentUser = {
+                address: address,
+                walletType: walletType,
+                connected: true
+            };
+            
+            // Save connection to localStorage
+            localStorage.setItem('walletConnection', JSON.stringify({
+                address: address,
+                walletType: walletType,
+                timestamp: Date.now()
+            }));
+            
+            updateStatus(`Connected to ${walletType}`, 'connected');
+            
+            // Show wallet info
+            document.getElementById('userAddress').textContent = address;
+            document.getElementById('chainInfo').textContent = 'Chain: Ethereum';
+            document.getElementById('walletInfo').style.display = 'block';
+            document.getElementById('connectBtn').textContent = 'Connected';
+            document.getElementById('connectBtn').disabled = true;
+            
+            console.log('Wallet connected:', currentUser);
+        }
+        
+        function handleConnectionError(error, walletType) {
+            console.error('Connection error:', error);
+            updateStatus(`Failed to connect: ${error.message}`, 'error');
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function disconnectWallet() {
+            currentUser = null;
+            localStorage.removeItem('walletConnection');
+            
+            updateStatus('Wallet disconnected', 'info');
+            document.getElementById('walletInfo').style.display = 'none';
+            document.getElementById('connectBtn').textContent = 'Connect Wallet';
+            document.getElementById('connectBtn').disabled = false;
+            
+            console.log('Wallet disconnected');
+        }
+        
+        // Listen for account changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', function (accounts) {
+                if (accounts.length === 0) {
+                    disconnectWallet();
+                } else if (currentUser && accounts[0] !== currentUser.address) {
+                    handleSuccessfulConnection(accounts[0], currentUser.walletType);
+                }
+            });
+            
+            window.ethereum.on('chainChanged', function (chainId) {
+                console.log('Chain changed to:', chainId);
+                // Handle chain change if needed
+            });
+        }
+    </script>
+</body>
+</html>
